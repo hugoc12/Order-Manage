@@ -1,10 +1,20 @@
-import {Button} from 'react-bootstrap'
+import {createBrowserRouter, RouterProvider} from 'react-router-dom';
+import Pedidos from './pages/pedidos';
+import Estoque from "./pages/estoque"
 
-export default function App(){
-  return(
-    <div>
-      <h1>Olá Vite</h1>
-      <Button variant="primary">Primary</Button>
-    </div>
+const browser = createBrowserRouter([ //Criação da estrutura de navegação.
+  {
+    path:'/',
+    element:<Pedidos/>
+  },
+  {
+    path:'/estoque',
+    element:<Estoque/>
+  },
+])
+
+export default function App() {
+  return (
+    <RouterProvider router={browser}/> //Disponibilizando a estrutura de navegação
   )
 }
