@@ -1,8 +1,6 @@
 import Container from 'react-bootstrap/Container';
-import Nav from 'react-bootstrap/Nav';
-import { Navbar, Table, Dropdown, DropdownButton } from 'react-bootstrap';
+import {Nav, Navbar, Table, Dropdown, DropdownButton, Button } from 'react-bootstrap';
 import './pedidos.css';
-import DropdownMenu from 'react-bootstrap/esm/DropdownMenu';
 
 export default function Pedidos() {
     return (
@@ -14,6 +12,7 @@ export default function Pedidos() {
                         <Nav.Link href="/" style={{ color: '#fff' }}>Pedidos</Nav.Link>
                         <Nav.Link href="/estoque">Estoque</Nav.Link>
                     </Nav>
+                    <Button variant="success">INCLUIR PEDIDO</Button>
                 </Container>
             </Navbar>
             <Table striped bordered hover size="sm">
@@ -34,18 +33,10 @@ export default function Pedidos() {
                         <td>ENVIADO</td>
                         <td>GR8000400</td>
                         <td>
-                            <Dropdown className="d-inline mx-2" autoClose="inside">
-                                <Dropdown.Toggle id="dropdown-autoclose-inside">
-                                    OPTIONS
-                                </Dropdown.Toggle>
-
-                                <DropdownMenu>
-                                    <Dropdown.Item href="#/action-1">Action</Dropdown.Item>
-                                    <Dropdown.Item href="#/action-2">Another action</Dropdown.Item>
-                                    <Dropdown.Item href="#/action-3">Something else</Dropdown.Item>
-                                </DropdownMenu>
-
-                            </Dropdown>
+                            <DropdownButton align="end" id="dropdown-menu-align-end">
+                                <Dropdown.Item eventKey="1">Exclui</Dropdown.Item>
+                                <Dropdown.Item eventKey="2">Editar</Dropdown.Item>
+                            </DropdownButton>
                         </td>
                     </tr>
                 </tbody>
