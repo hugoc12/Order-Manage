@@ -17,3 +17,34 @@ th, td{
 .trPedido:hover{
     cursor: pointer;
 }
+
+.listItens{
+  margin:15px 0px;
+}
+
+.bttAddItem{
+  margin-top: 31px;
+}
+
+.listGroupForm{
+  margin: 15px 0px;
+}
+
+.itemListForm{
+  display: flex !important;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.itemListForm>label{
+  width: 90%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.vlTotalItem{
+  vertical-align: center;
+}
