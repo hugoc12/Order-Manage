@@ -27,26 +27,24 @@ export default function Pedidos() {
     ]
 
     const [show, setShow] = useState(false);
-    const [validacao, setValidacao] = useState(false);
-    const [radioValue, setRadioValue] = useState('CPF');
+    const [validacaoForm, setValidacaoForm] = useState(false);
+    const [radioValue, setRadioValue] = useState('CNPJ');
     const [vlTotalItem, setvlTotalItem] = useState('28.00');
 
-    const radios = [
-        { name: 'CPF', value: 'CPF' },
-        { name: 'CNPJ', value: 'CNPJ' },
-    ];
+    /*const [shoppingList, setShoppingList] = useState([
 
-    const [shoppingList, setShoppingList] = useState([
-
-    ])
+    ])*/
 
     function handleSubmit(event) {
         let form = event.currentTarget;
+        //let formData = new FormData(form);
+        //let data = Object.fromEntries(formData); DADOS INSERIDOS
+        
         if (form.checkValidity() === false) {
             event.preventDefault();
             event.stopPropagation();
         }
-        setValidacao(true);
+        setValidacaoForm(true);
     }
 
     const handleClose = () => setShow(false);
@@ -75,15 +73,15 @@ export default function Pedidos() {
             <Modal show={show} onHide={handleClose} size='lg'>
                 <Modal.Header closeButton><Modal.Title>Modal heading</Modal.Title></Modal.Header>
                 <Modal.Body>
-                    <Form noValidate validated={validacao} onSubmit={(event) => handleSubmit(event)} id='formIncluirPedido'>
+                    <Form noValidate validated={validacaoForm} onSubmit={(event) => handleSubmit(event)} id='formIncluirPedido' name='formIncluirPedido'>
                         <Form.Group className="mb-3" controlId="formPedidoNome">
                             <Form.Label>Nome Completo</Form.Label>
-                            <Form.Control required placeholder="Nome completo..." />
+                            <Form.Control required placeholder="Nome completo..." form='formIncluirPedido' name='nome'/>
                         </Form.Group>
 
                         <Form.Group className="mb-3" controlId="formPedidoEmail">
                             <Form.Label>Endereço de Email</Form.Label>
-                            <Form.Control required type="email" placeholder="Enter email" />
+                            <Form.Control required type="email" placeholder="Enter email" form='formIncluirPedido' name='email' />
                             <Form.Control.Feedback type='valid'>
                                 Email valido!
                             </Form.Control.Feedback>
@@ -94,64 +92,38 @@ export default function Pedidos() {
 
                         <Form.Group className="mb-3" controlId="formPedidoContato">
                             <Form.Label>Telefone/Celular</Form.Label>
-                            <Form.Control type='number' required placeholder="(00)90000-0000" onKeyDown={(e) => {
-                                if (e.code !== 'Backspace') {
-                                    if (e.currentTarget.value.length === 11 || e.code === 'Period') {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                    }
-                                }
-                            }} />
+                            <Form.Control required placeholder="(00)90000-0000" maxLength={11} form='formIncluirPedido' name='numeroContato'/>
                         </Form.Group>
 
                         <Form.Group className="mb-3" controlId="formPedidoRegistro">
                             <ButtonGroup className="mb-2">
-                                {radios.map((radio, idx) => (
-                                    <ToggleButton
-                                        key={idx}
-                                        id={`radio-${idx}`}
-                                        type="radio"
-                                        variant="primary"
-                                        name="radio"
-                                        value={radio.value}
-                                        checked={radioValue === radio.value}
-                                        onChange={(e) => setRadioValue(e.currentTarget.value)}
-                                    >
-                                        {radio.name}
-                                    </ToggleButton>
-                                ))}
+                                <ToggleButton type='radio' variant='primary' value={'CPF'} checked={radioValue === 'CPF'} onClick={(e) => setRadioValue('CPF')}>CPF</ToggleButton>
+                                <ToggleButton type='radio' variant='primary' value={'CPF'} checked={radioValue === 'CNPJ'} onClick={(e) => setRadioValue('CNPJ')}>CNPJ</ToggleButton>
                             </ButtonGroup>
-                            <Form.Control required type='number' placeholder="CPF/CNPJ" onKeyDown={(e) => {
-                                if (e.code !== 'Backspace') {
-                                    if (e.currentTarget.value.length === 15 || e.code === 'Period') {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                    }
-                                }
-                            }} />
+                            <Form.Control required placeholder={`Digite seu ${radioValue}...`} maxLength={15} form='formIncluirPedido' name='registro'/>
                         </Form.Group>
 
-                        <Row>
+                        <Row className="mb-2">
                             <FormGroup md={"10"} as={Col} controlId='formPedidoEndereco'>
                                 <Form.Label>Endereço</Form.Label>
-                                <Form.Control required placeholder='Digite seu endereço...' />
+                                <Form.Control required placeholder='Digite seu endereço...' form='formIncluirPedido' name='endereco'/>
                             </FormGroup>
 
                             <FormGroup md={"2"} as={Col} controlId='formPedidoEnderecoNumero'>
                                 <Form.Label>Numero</Form.Label>
-                                <Form.Control required placeholder='nº' minLength={1} maxLength={7} />
+                                <Form.Control required placeholder='nº' minLength={1} maxLength={7} form='formIncluirPedido' name='numeroResidencial'/>
                             </FormGroup>
                         </Row>
 
                         <Row className="mb-3">
                             <FormGroup as={Col} controlId="formPedidoCidade">
                                 <Form.Label>Cidade</Form.Label>
-                                <Form.Control required />
+                                <Form.Control required form='formIncluirPedido' name='cidade'/>
                             </FormGroup>
 
                             <FormGroup as={Col} controlId="formPedidoEstado">
                                 <Form.Label>Estado</Form.Label>
-                                <Form.Select required>
+                                <Form.Select required form='formIncluirPedido' name='estado'>
                                     <option>Choose...</option>
                                     <option value="AC">Acre</option>
                                     <option value="AL">Alagoas</option>
@@ -186,22 +158,14 @@ export default function Pedidos() {
 
                             <FormGroup as={Col} controlId="formPedidoCep">
                                 <Form.Label>Cep</Form.Label>
-                                <Form.Control type='number' required onKeyDown={(e) => {
-                                    if (e.code !== 'Backspace') {
-                                        if (e.currentTarget.value.length === 8 || e.code === 'Period') {
-                                            e.preventDefault();
-                                            e.stopPropagation();
-                                        }
-                                    }
-                                }} />
+                                <Form.Control required maxLength={8} form='formIncluirPedido' name='cep'/>
                             </FormGroup>
                         </Row>
 
-                        <Row>
-
+                        <Row className='mb-4'>
                             <Form.Group md={7} as={Col} controlId='nameItem'>
                                 <Form.Label>Produto</Form.Label>
-                                <Form.Select onChange={(e) => productSelected(e)}>
+                                <Form.Select onChange={(e) => productSelected(e)} form='formIncluirPedido'>
                                     <option value={false}>Selecione...</option>
                                     <option value={'0'}>Suplemento Mineral - BioVitalithy</option>
                                     <option value={'1'}>Whei - 900g - MaxTitanium</option>
@@ -212,18 +176,17 @@ export default function Pedidos() {
 
                             <Form.Group md={2} as={Col} controlId='qtdeItem'>
                                 <Form.Label>Qtde</Form.Label>
-                                <Form.Control required type='number' defaultValue={1}></Form.Control>
+                                <Form.Control required type='number' defaultValue={1} min={1}></Form.Control>
                             </Form.Group>
 
                             <Form.Group md={2} as={Col} className='vlTotalItem'>
                                 <Form.Label>R$</Form.Label>
-                                <span style={{ fontWeight: 'bold', fontSize: 18, display:'block',width:'100%' }}>{vlTotalItem}</span>
+                                <span style={{ fontWeight: 'bold', fontSize: 18, display: 'block', width: '100%' }}>{vlTotalItem}</span>
                             </Form.Group>
 
                             <FormGroup md={1} as={Col}>
                                 <Button variant='success' className='bttAddItem'>+</Button>
                             </FormGroup>
-
                         </Row>
 
                         <ListGroup className='listGroupForm'>
