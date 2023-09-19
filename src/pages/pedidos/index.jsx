@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Container, Nav, Navbar, Table, Dropdown, DropdownButton, Button, Modal, Form, FormGroup, Row, Col, ButtonGroup, ToggleButton, ListGroup } from 'react-bootstrap';
+import { Container, Nav, Navbar, Table, Dropdown, DropdownButton, Button, Modal, Form, FormGroup, Row, Col, ListGroup } from 'react-bootstrap';
 import './pedidos.css';
 
 export default function Pedidos() {
@@ -28,18 +28,30 @@ export default function Pedidos() {
 
     const [show, setShow] = useState(false);
     const [validacaoForm, setValidacaoForm] = useState(false);
-    const [radioValue, setRadioValue] = useState('CNPJ');
+    const [radioChecked, setRadioChecked] = useState({pessoaFisica: true, pessoaJuridica: false});
     const [vlTotalItem, setvlTotalItem] = useState('28.00');
 
-    /*const [shoppingList, setShoppingList] = useState([
-
-    ])*/
+    /*const [shoppingList, setShoppingList] = useState([])*/
 
     function handleSubmit(event) {
         let form = event.currentTarget;
         //let formData = new FormData(form);
         //let data = Object.fromEntries(formData); DADOS INSERIDOS
-        
+        /*let childsFormsValidation = {
+            nomeCompleto: {
+                value: 'Hugo de Oliveira Pinho',
+                validade: true
+            },
+            email: {
+                value: 'hugo_c12@outlook.com',
+                validation: true
+            },
+            contato: {
+                value: '(11)9'
+            }
+
+        }*/
+
         if (form.checkValidity() === false) {
             event.preventDefault();
             event.stopPropagation();
@@ -74,17 +86,43 @@ export default function Pedidos() {
                 <Modal.Header closeButton><Modal.Title>Modal heading</Modal.Title></Modal.Header>
                 <Modal.Body>
                     <Form noValidate validated={validacaoForm} onSubmit={(event) => handleSubmit(event)} id='formIncluirPedido' name='formIncluirPedido'>
-                        <Form.Group className="mb-3" controlId="formPedidoNome">
-                            <Form.Label>Nome Completo</Form.Label>
-                            <Form.Control required placeholder="Nome completo..." form='formIncluirPedido' name='nome'/>
+                        <Form.Group className="mb-3" controlId='formPedidoTipoPessoa' style={{textAlign:'center', fontSize:'20px'}}>
+                            <Form.Check
+                                inline
+                                value={'pessoaFisica'}
+                                checked={radioChecked.pessoaFisica}
+                                label="Pessoa Física"
+                                name="tipoPessoa"
+                                type='radio'
+                                id={`pessoaFísica`}
+                                onClick={(e)=>setRadioChecked({pessoaFisica:true, pessoaJuridica:false})}
+                            />
+                            <Form.Check
+                                inline
+                                value={'pessoaJuridica'}
+                                checked={radioChecked.pessoaJuridica}
+                                label="Pessoa Jurídica"
+                                name="tipoPessoa"
+                                type='radio'
+                                id={`pessoaJurídica`}
+                                onClick={(e)=>setRadioChecked({pessoaFisica:false, pessoaJuridica:true})}
+                            />
                         </Form.Group>
+
+                        <Form.Group className="mb-3" controlId="formPedidoPrimeiroNome">
+                            <Form.Label>Primeiro Nome</Form.Label>
+                            <Form.Control required pattern='[A-Za-z ç]+' placeholder="Primeiro Nome" form='formIncluirPedido' name='primeiroNome' maxLength={60} />
+                        </Form.Group>
+                        {radioChecked.pessoaFisica?
+                        <FormGroup className='mb-3' controlId='formPedidoUltimoNome'>
+                            <Form.Label>Último Nome</Form.Label>
+                            <Form.Control required pattern='[A-Za-z ç]+' placeholder='Último Nome' form='formIncluirPedido' name='ultimoNome' maxLength={60}></Form.Control>
+                        </FormGroup>
+                        :<></>}
 
                         <Form.Group className="mb-3" controlId="formPedidoEmail">
                             <Form.Label>Endereço de Email</Form.Label>
-                            <Form.Control required type="email" placeholder="Enter email" form='formIncluirPedido' name='email' />
-                            <Form.Control.Feedback type='valid'>
-                                Email valido!
-                            </Form.Control.Feedback>
+                            <Form.Control required type="email" pattern='[A-za-z]+@{1}[A-za-z]+.com(.br){0,1}' placeholder="Enter email" form='formIncluirPedido' name='email' />
                             <Form.Control.Feedback type='invalid'>
                                 Email inválido!
                             </Form.Control.Feedback>
@@ -92,33 +130,30 @@ export default function Pedidos() {
 
                         <Form.Group className="mb-3" controlId="formPedidoContato">
                             <Form.Label>Telefone/Celular</Form.Label>
-                            <Form.Control required placeholder="(00)90000-0000" maxLength={11} form='formIncluirPedido' name='numeroContato'/>
+                            <Form.Control required type='tel' maxLength={13} form='formIncluirPedido' name='numeroContato' aria-describedby="exemploNumero" />
+                            <Form.Text id="exemploNumero" muted>Ex: (11)1234-1234/(11)91234-1234</Form.Text>
                         </Form.Group>
 
                         <Form.Group className="mb-3" controlId="formPedidoRegistro">
-                            <ButtonGroup className="mb-2">
-                                <ToggleButton type='radio' variant='primary' value={'CPF'} checked={radioValue === 'CPF'} onClick={(e) => setRadioValue('CPF')}>CPF</ToggleButton>
-                                <ToggleButton type='radio' variant='primary' value={'CPF'} checked={radioValue === 'CNPJ'} onClick={(e) => setRadioValue('CNPJ')}>CNPJ</ToggleButton>
-                            </ButtonGroup>
-                            <Form.Control required placeholder={`Digite seu ${radioValue}...`} maxLength={15} form='formIncluirPedido' name='registro'/>
+                            <Form.Control required placeholder={`Digite seu ${radioChecked.pessoaFisica?'CPF':'CNPJ'}...`} maxLength={15} form='formIncluirPedido' name='registro' />
                         </Form.Group>
 
                         <Row className="mb-2">
                             <FormGroup md={"10"} as={Col} controlId='formPedidoEndereco'>
                                 <Form.Label>Endereço</Form.Label>
-                                <Form.Control required placeholder='Digite seu endereço...' form='formIncluirPedido' name='endereco'/>
+                                <Form.Control required placeholder='Digite seu endereço...' form='formIncluirPedido' name='endereco' />
                             </FormGroup>
 
                             <FormGroup md={"2"} as={Col} controlId='formPedidoEnderecoNumero'>
                                 <Form.Label>Numero</Form.Label>
-                                <Form.Control required placeholder='nº' minLength={1} maxLength={7} form='formIncluirPedido' name='numeroResidencial'/>
+                                <Form.Control required placeholder='nº' minLength={1} maxLength={7} form='formIncluirPedido' name='numeroResidencial' />
                             </FormGroup>
                         </Row>
 
                         <Row className="mb-3">
                             <FormGroup as={Col} controlId="formPedidoCidade">
                                 <Form.Label>Cidade</Form.Label>
-                                <Form.Control required form='formIncluirPedido' name='cidade'/>
+                                <Form.Control required form='formIncluirPedido' name='cidade' />
                             </FormGroup>
 
                             <FormGroup as={Col} controlId="formPedidoEstado">
@@ -158,7 +193,7 @@ export default function Pedidos() {
 
                             <FormGroup as={Col} controlId="formPedidoCep">
                                 <Form.Label>Cep</Form.Label>
-                                <Form.Control required maxLength={8} form='formIncluirPedido' name='cep'/>
+                                <Form.Control required maxLength={8} form='formIncluirPedido' name='cep' />
                             </FormGroup>
                         </Row>
 
