@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Container, Nav, Navbar, Table, Dropdown, DropdownButton, Button, Modal, Form, FormGroup, Row, Col, ListGroup, FormLabel } from 'react-bootstrap';
+import { Container, Nav, Navbar, Table, Dropdown, DropdownButton, Button, Modal, Form, FormGroup, Row, Col, ListGroup } from 'react-bootstrap';
 import './pedidos.css';
 
 export default function Pedidos() {
