@@ -54,32 +54,33 @@ export default function Pedidos() {
     }
 
     function autoCompleteAddress(estado, cidade) {
-        let dataEstado = db.estados.find((obj)=>obj.sigla === estado);
-        
+        let dataEstado = db.estados.find((obj) => obj.sigla === estado);
+        console.log(estado);
+
         let nodeSelectEstado = document.getElementsByName("estado")[0];
         let nodeSelectCidades = document.getElementsByName("cidade")[0];
 
         //Selecionando UF buscado pelo CEP
-        nodeSelectEstado.childNodes.forEach((node, key)=>{
-            if(node.hasAttribute("selected")){
+        nodeSelectEstado.childNodes.forEach((node, key) => {
+            if (node.hasAttribute("selected")) {
                 node.removeAttribute("selected");
             }
 
-            if(node.value === estado){
-                console.log(`${node} - ${node.value}`);
+            if (node.value === estado) {
                 node.setAttribute("selected", "true");
             }
         })
 
         //Montando a lista de cidades.
-        dataEstado.cidades.forEach((name, ind)=>{
+        nodeSelectCidades.innerHTML = '';//Limpando lista de cidades.
+        dataEstado.cidades.forEach((name, ind) => {
             let nodeOption = document.createElement('option');
             let textNode = document.createTextNode(name);
             nodeOption.appendChild(textNode);
             nodeOption.setAttribute("value", name);
             nodeOption.setAttribute("key", ind);
 
-            if(name === cidade){
+            if (name === cidade) {
                 nodeOption.setAttribute("selected", "true")
             }
             nodeSelectCidades.appendChild(nodeOption);
@@ -145,9 +146,9 @@ export default function Pedidos() {
                             <Form.Control required pattern='[A-Za-z ç]+' placeholder="Nome" form='formIncluirPedido' name='primeiroNome' maxLength={60} />
                         </Form.Group>
                         {radioChecked.pessoaFisica ?
-                            <FormGroup className='mb-3' controlId='formPedidoUltimoNome'>
-                                <Form.Label>Último Nome</Form.Label>
-                                <Form.Control required pattern='[A-Za-z ç]+' placeholder='Último Nome' form='formIncluirPedido' name='ultimoNome' maxLength={60}></Form.Control>
+                            <FormGroup className='mb-3' controlId='formPedidoSobrenome'>
+                                <Form.Label>Sobrenome</Form.Label>
+                                <Form.Control required pattern='[A-Za-z ç]+' placeholder='Sobrenome' form='formIncluirPedido' name='sobrenome' maxLength={60}></Form.Control>
                             </FormGroup>
                             : <></>}
 
@@ -174,36 +175,37 @@ export default function Pedidos() {
 
                         <Form.Group className="mb-3" controlId="formPedidoRegistro">
                             <Form.Label>{radioChecked.pessoaFisica ? 'CPF' : 'CNPJ'}</Form.Label>
-                            <Form.Control required placeholder={`Digite seu ${radioChecked.pessoaFisica ? 'CPF' : 'CNPJ'}...`} maxLength={15} pattern='[0-9]+' form='formIncluirPedido' name='registro' />
+                            <Form.Control required placeholder={`Digite seu ${radioChecked.pessoaFisica ? 'CPF' : 'CNPJ'}...`} minLength={11} maxLength={15} pattern='[0-9]+' form='formIncluirPedido' name='registro' />
                         </Form.Group>
 
-                        <Row className="mb-3">
-                            <FormGroup className="mb-3" md={"6"} as={Col} controlId="formPedidoCep">
+                        
+                        <Row className="mb-3 rowEndereco">
+                            <FormGroup className="mb-3" md={"2"} as={Col} controlId="formPedidoCep">
                                 <Form.Label>Cep</Form.Label>
                                 <Form.Control required minLength={8} maxLength={8} pattern='[0-9]+' form='formIncluirPedido' name='cep' onBlur={(e) => requireCep(e.currentTarget.value)} />
                             </FormGroup>
 
-                            <FormGroup className="mb-3" md={"9"} as={Col} controlId='formPedidoEndereco'>
+                            <FormGroup className="mb-3" md="6" as={Col} controlId='formPedidoEndereco'>
                                 <Form.Label>Endereço</Form.Label>
                                 <Form.Control required placeholder='Digite seu endereço...' maxLength={60} form='formIncluirPedido' name='endereco' />
                             </FormGroup>
 
-                            <Form.Group>
+                            <Form.Group className='mb-3' md="4" as={Col}>
                                 <Form.Label>Bairro</Form.Label>
                                 <Form.Control required placeholder='Bairro' maxLength={60} form='formIncluirPedido' name='bairro'></Form.Control>
                             </Form.Group>
+                        </Row>
 
+                        <Row className="mb-3 rowEndereco">
                             <FormGroup className="mb-3" md={"3"} as={Col} controlId='formPedidoEnderecoNumero'>
                                 <Form.Label>Numero</Form.Label>
                                 <Form.Control required placeholder='nº' minLength={1} maxLength={7} pattern='[0-9]+' form='formIncluirPedido' name='numeroResidencial' />
                             </FormGroup>
-                        </Row>
 
-                        <Row className="mb-3">
                             <FormGroup as={Col} controlId="formPedidoEstado">
                                 <Form.Label>Estado</Form.Label>
                                 <Form.Select required form='formIncluirPedido' name='estado' onChange={(e) => autoCompleteAddress(e.currentTarget.value)}>
-                                    <option value="undefined">...</option>
+                                    <option></option>
                                     <option value="AC">Acre</option>
                                     <option value="AL">Alagoas</option>
                                     <option value="AP">Amapá</option>
@@ -234,13 +236,11 @@ export default function Pedidos() {
                                 </Form.Select>
                             </FormGroup>
 
-                            <FormGroup as={Col} controlId="formPedidoCidade">
+                            <FormGroup className='mb-3' as={Col} controlId="formPedidoCidade">
                                 <Form.Label>Cidade</Form.Label>
                                 <Form.Select required form='formIncluirPedido' name='cidade'>
-                                    <option value={undefined}>...</option>
                                 </Form.Select>
                             </FormGroup>
-
                         </Row>
 
                         <Row className='mb-4'>
