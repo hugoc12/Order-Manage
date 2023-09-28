@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Container, Nav, Navbar, Table, Dropdown, DropdownButton, Button, Modal, Form, FormGroup, Row, Col, ListGroup } from 'react-bootstrap';
 import './pedidos.css';
+import db from '../../services/estados-cidades.json';
 
 export default function Pedidos() {
     const listProduct = [ //Isso virá do firebase
@@ -29,26 +30,11 @@ export default function Pedidos() {
     const [validacaoForm, setValidacaoForm] = useState(false);
     const [radioChecked, setRadioChecked] = useState({ pessoaFisica: true, pessoaJuridica: false });
     const [vlTotalItem, setvlTotalItem] = useState('28.00');
-    /*const [shoppingList, setShoppingList] = useState([])*/
 
     function handleSubmit(event) {
         let form = event.currentTarget;
         //let formData = new FormData(form);
         //let data = Object.fromEntries(formData); DADOS INSERIDOS
-        /*let childsFormsValidation = {
-            nomeCompleto: {
-                value: 'Hugo de Oliveira Pinho',
-                validade: true
-            },
-            email: {
-                value: 'hugo_c12@outlook.com',
-                validation: true
-            },
-            contato: {
-                value: '(11)9'
-            }
-
-        }*/
 
         if (form.checkValidity() === false) {
             event.preventDefault();
@@ -65,7 +51,57 @@ export default function Pedidos() {
         let vlProduto = listProduct[event.currentTarget.value].price
 
         setvlTotalItem(Number(qtdeDefinida) * Number(vlProduto));
+    }
 
+    function autoCompleteAddress(estado, cidade) {
+        let dataEstado = db.estados.find((obj)=>obj.sigla === estado);
+        
+        let nodeSelectEstado = document.getElementsByName("estado")[0];
+        let nodeSelectCidades = document.getElementsByName("cidade")[0];
+
+        //Selecionando UF buscado pelo CEP
+        nodeSelectEstado.childNodes.forEach((node, key)=>{
+            if(node.hasAttribute("selected")){
+                node.removeAttribute("selected");
+            }
+
+            if(node.value === estado){
+                console.log(`${node} - ${node.value}`);
+                node.setAttribute("selected", "true");
+            }
+        })
+
+        //Montando a lista de cidades.
+        dataEstado.cidades.forEach((name, ind)=>{
+            let nodeOption = document.createElement('option');
+            let textNode = document.createTextNode(name);
+            nodeOption.appendChild(textNode);
+            nodeOption.setAttribute("value", name);
+            nodeOption.setAttribute("key", ind);
+
+            if(name === cidade){
+                nodeOption.setAttribute("selected", "true")
+            }
+            nodeSelectCidades.appendChild(nodeOption);
+        })
+    }
+
+    async function requireCep(cep) {
+        let inputEndereco = document.getElementsByName('endereco')[0];
+        let inputBairro = document.getElementsByName('bairro')[0];
+
+        try {
+            const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+            const data = await response.json()
+
+            autoCompleteAddress(data.uf, data.localidade);
+
+            inputEndereco.value = data.logradouro;
+            inputBairro.value = data.bairro;
+
+        } catch (err) {
+            console.log(err);
+        }
     }
 
     return (
@@ -142,12 +178,22 @@ export default function Pedidos() {
                         </Form.Group>
 
                         <Row className="mb-3">
-                            <FormGroup md={"9"} as={Col} controlId='formPedidoEndereco'>
+                            <FormGroup className="mb-3" md={"6"} as={Col} controlId="formPedidoCep">
+                                <Form.Label>Cep</Form.Label>
+                                <Form.Control required minLength={8} maxLength={8} pattern='[0-9]+' form='formIncluirPedido' name='cep' onBlur={(e) => requireCep(e.currentTarget.value)} />
+                            </FormGroup>
+
+                            <FormGroup className="mb-3" md={"9"} as={Col} controlId='formPedidoEndereco'>
                                 <Form.Label>Endereço</Form.Label>
                                 <Form.Control required placeholder='Digite seu endereço...' maxLength={60} form='formIncluirPedido' name='endereco' />
                             </FormGroup>
 
-                            <FormGroup md={"3"} as={Col} controlId='formPedidoEnderecoNumero'>
+                            <Form.Group>
+                                <Form.Label>Bairro</Form.Label>
+                                <Form.Control required placeholder='Bairro' maxLength={60} form='formIncluirPedido' name='bairro'></Form.Control>
+                            </Form.Group>
+
+                            <FormGroup className="mb-3" md={"3"} as={Col} controlId='formPedidoEnderecoNumero'>
                                 <Form.Label>Numero</Form.Label>
                                 <Form.Control required placeholder='nº' minLength={1} maxLength={7} pattern='[0-9]+' form='formIncluirPedido' name='numeroResidencial' />
                             </FormGroup>
@@ -156,8 +202,8 @@ export default function Pedidos() {
                         <Row className="mb-3">
                             <FormGroup as={Col} controlId="formPedidoEstado">
                                 <Form.Label>Estado</Form.Label>
-                                <Form.Select required form='formIncluirPedido' name='estado'>
-                                    <option>Choose...</option>
+                                <Form.Select required form='formIncluirPedido' name='estado' onChange={(e) => autoCompleteAddress(e.currentTarget.value)}>
+                                    <option value="undefined">...</option>
                                     <option value="AC">Acre</option>
                                     <option value="AL">Alagoas</option>
                                     <option value="AP">Amapá</option>
@@ -185,19 +231,16 @@ export default function Pedidos() {
                                     <option value="SP">São Paulo</option>
                                     <option value="SE">Sergipe</option>
                                     <option value="TO">Tocantins</option>
-                                    <option value="EX">Estrangeiro</option>
                                 </Form.Select>
                             </FormGroup>
 
                             <FormGroup as={Col} controlId="formPedidoCidade">
                                 <Form.Label>Cidade</Form.Label>
-                                <Form.Control required form='formIncluirPedido' name='cidade' pattern='[a-zA-z ç]+' maxLength={48}/>
+                                <Form.Select required form='formIncluirPedido' name='cidade'>
+                                    <option value={undefined}>...</option>
+                                </Form.Select>
                             </FormGroup>
 
-                            <FormGroup as={Col} controlId="formPedidoCep">
-                                <Form.Label>Cep</Form.Label>
-                                <Form.Control required minLength={8} maxLength={8} pattern='[0-9]+' form='formIncluirPedido' name='cep' />
-                            </FormGroup>
                         </Row>
 
                         <Row className='mb-4'>
