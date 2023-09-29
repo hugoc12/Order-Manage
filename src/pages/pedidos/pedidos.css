@@ -11,10 +11,6 @@ th, td{
   margin:15px 0px;
 }
 
-.bttAddItem{
-  margin-top: 31px;
-}
-
 .listGroupForm{
   margin: 15px 0px;
 }
@@ -35,5 +31,24 @@ th, td{
 }
 
 .vlTotalItem{
-  vertical-align: center;
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: center !important;
+  align-items: flex-end !important;
 }
+
+.vlTotalItem>small{
+  font-size: 22px;
+}
+
+.bttAddItem{
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: center !important;
+  align-items: flex-end !important;
+}
+
+.bttAddItem>button{
+  width: 100%;
+}
+

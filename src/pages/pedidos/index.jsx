@@ -1,35 +1,17 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Container, Nav, Navbar, Table, Dropdown, DropdownButton, Button, Modal, Form, FormGroup, Row, Col, ListGroup } from 'react-bootstrap';
 import './pedidos.css';
 import db from '../../services/estados-cidades.json';
+import { app } from '../../services/firebase/firebase';
+import { getFirestore, collection, getDocs } from 'firebase/firestore';
 
 export default function Pedidos() {
-    const listProduct = [ //Isso virá do firebase
-        {
-            id: 0,
-            name: 'Suplemento Mineral - BioVitalithy',
-            price: 68.00
-        },
-        {
-            id: 1,
-            name: 'Whei - 900g - MaxTitanium',
-            price: 126.90
-        },
-        {
-            id: 2,
-            name: 'Creatina - 300g - Probiotica',
-            price: 69.90
-        },
-        {
-            id: 3,
-            name: 'Polivitaminico Mastigavel - Growth Supplements',
-            price: 23.40
-        }
-    ]
+    const firestoneDB = getFirestore(app);
     const [show, setShow] = useState(false);
     const [validacaoForm, setValidacaoForm] = useState(false);
     const [radioChecked, setRadioChecked] = useState({ pessoaFisica: true, pessoaJuridica: false });
-    const [vlTotalItem, setvlTotalItem] = useState('28.00');
+    const [vlTotalItem, setvlTotalItem] = useState('0.00');
+    const [listProducts, setListProducts] = useState([]);
 
     function handleSubmit(event) {
         let form = event.currentTarget;
@@ -46,11 +28,22 @@ export default function Pedidos() {
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
 
-    function productSelected(event) {
-        let qtdeDefinida = document.getElementById('qtdeItem').value;
-        let vlProduto = listProduct[event.currentTarget.value].price
+    function productSelected() {
+        let BRReal = new Intl.NumberFormat('pt-BR', {
+            style: 'currency',
+            currency: 'BRL',
+        });
+        let productSelect = document.getElementById('productSelect');
+        let inputNumberQtde = document.getElementById('qtdeItem');
 
-        setvlTotalItem(Number(qtdeDefinida) * Number(vlProduto));
+        if (productSelect.value && inputNumberQtde.value > 0) {
+            let qtdeDefinida = inputNumberQtde.value;
+            let vlProduto = listProducts[productSelect.value[0]].valor;
+
+            setvlTotalItem(BRReal.format((vlProduto * qtdeDefinida).toFixed(2)))
+        }else{
+            setvlTotalItem(BRReal.format('0.00'))
+        }
     }
 
     function autoCompleteAddress(estado, cidade) {
@@ -87,6 +80,35 @@ export default function Pedidos() {
         })
     }
 
+    function addProduct(){
+        let listGroupItens = document.getElementById('listGroupItens');
+        let productSelect = document.getElementById('productSelect');
+        let inputNumberQtde = document.getElementById('qtdeItem');
+
+        let itemList = document.createElement('div');
+        let itemListChild1 = document.createElement('label');
+        let itemListChild2 = document.createElement('button');
+
+        let text1NodeChild1 = document.createTextNode(`${inputNumberQtde.value}x ${listProducts[productSelect.value[0]].name}`);
+        let text2NodeChild1 = document.createTextNode(vlTotalItem)
+        let spanNode = document.createElement("span");
+        spanNode.appendChild(text2NodeChild1);
+        itemListChild1.appendChild(text1NodeChild1);
+        itemListChild1.appendChild(spanNode);
+
+        let textNodeChild2 = document.createTextNode('X');
+        itemListChild2.setAttribute("class", "btn btn-danger");
+        itemListChild2.setAttribute("type", "button");
+        itemListChild2.appendChild(textNodeChild2);
+        
+        itemList.setAttribute("class", "itemListForm list-group-item");
+        itemList.appendChild(itemListChild1)
+        itemList.appendChild(itemListChild2)
+
+        listGroupItens.appendChild(itemList)
+        
+    }
+
     async function requireCep(cep) {
         let inputEndereco = document.getElementsByName('endereco')[0];
         let inputBairro = document.getElementsByName('bairro')[0];
@@ -104,6 +126,18 @@ export default function Pedidos() {
             console.log(err);
         }
     }
+
+    useEffect(() => {
+        //Buscar dados no firestone.
+        (async function getProducts() {
+            const docsProdutos = await getDocs(collection(firestoneDB, "produtos"));
+            const dataDocs = docsProdutos.docs.map((doc) => {
+                return Object.assign({ id: doc.id }, doc.data());
+            })
+            console.log(dataDocs);
+            setListProducts(dataDocs);
+        })()
+    }, [firestoneDB])
 
     return (
         <div>
@@ -178,8 +212,8 @@ export default function Pedidos() {
                             <Form.Control required placeholder={`Digite seu ${radioChecked.pessoaFisica ? 'CPF' : 'CNPJ'}...`} minLength={11} maxLength={15} pattern='[0-9]+' form='formIncluirPedido' name='registro' />
                         </Form.Group>
 
-                        
-                        <Row className="mb-3 rowEndereco">
+
+                        <Row className="mb-3">
                             <FormGroup className="mb-3" md={"2"} as={Col} controlId="formPedidoCep">
                                 <Form.Label>Cep</Form.Label>
                                 <Form.Control required minLength={8} maxLength={8} pattern='[0-9]+' form='formIncluirPedido' name='cep' onBlur={(e) => requireCep(e.currentTarget.value)} />
@@ -196,7 +230,7 @@ export default function Pedidos() {
                             </Form.Group>
                         </Row>
 
-                        <Row className="mb-3 rowEndereco">
+                        <Row className="mb-3">
                             <FormGroup className="mb-3" md={"3"} as={Col} controlId='formPedidoEnderecoNumero'>
                                 <Form.Label>Numero</Form.Label>
                                 <Form.Control required placeholder='nº' minLength={1} maxLength={7} pattern='[0-9]+' form='formIncluirPedido' name='numeroResidencial' />
@@ -243,35 +277,34 @@ export default function Pedidos() {
                             </FormGroup>
                         </Row>
 
-                        <Row className='mb-4'>
+                        <Row className="mb-4">
                             <Form.Group md={7} as={Col} controlId='nameItem'>
                                 <Form.Label>Produto</Form.Label>
-                                <Form.Select onChange={(e) => productSelected(e)} form='formIncluirPedido'>
-                                    <option value={false}>Selecione...</option>
-                                    <option value={'0'}>Suplemento Mineral - BioVitalithy</option>
-                                    <option value={'1'}>Whei - 900g - MaxTitanium</option>
-                                    <option value={'2'}>Creatina - 300g - Probiotica</option>
-                                    <option value={'3'}>Polivitaminico Mastigavel - Growth Supplements</option>
+                                <Form.Select required onClick={(e) => productSelected()} form='formIncluirPedido' id='productSelect'>
+                                    <option></option>
+                                    {listProducts.map((el, ind) => <option key={ind} value={`${ind}-${el.id}`}>{el.name}</option>)}
                                 </Form.Select>
                             </Form.Group>
 
                             <Form.Group md={2} as={Col} controlId='qtdeItem'>
                                 <Form.Label>Qtde</Form.Label>
-                                <Form.Control required type='number' defaultValue={1} min={1}></Form.Control>
+                                <Form.Control required type='number' defaultValue={1} min={1} onKeyDown={(e)=>e.preventDefault()} onChange={(e)=>productSelected()}></Form.Control>
                             </Form.Group>
 
-                            <Form.Group md={2} as={Col} className='vlTotalItem'>
-                                <Form.Label>R$</Form.Label>
-                                <span style={{ fontWeight: 'bold', fontSize: 18, display: 'block', width: '100%' }}>{vlTotalItem}</span>
+                            <Form.Group md={2} as={Col} className='vlTotalItem' controlId='vlTotalItem'>
+                                <Form.Text>{vlTotalItem}</Form.Text>
                             </Form.Group>
 
-                            <FormGroup md={1} as={Col}>
-                                <Button variant='success' className='bttAddItem'>+</Button>
+                            <FormGroup md={1} as={Col} className='bttAddItem' onClick={(e)=>addProduct()}>
+                                <Button variant='success'>+</Button>
                             </FormGroup>
                         </Row>
 
-                        <ListGroup className='listGroupForm'>
-                            <ListGroup.Item className='itemListForm'><label>5x Biovitalith - <span>R$550.00</span></label><Button variant='danger'>X</Button></ListGroup.Item>
+                        <ListGroup className='listGroupForm' id='listGroupItens'>
+                            <ListGroup.Item className='itemListForm'>
+                                <label>5x Biovitalith - <span>R$550.00</span></label>
+                                <Button variant='danger'>X</Button>                 
+                            </ListGroup.Item>
                             <ListGroup.Item className='itemListForm'><label>2x Whei - 900g - MaxTitanium - <span>R$190.00</span></label> <Button variant='danger'>X</Button></ListGroup.Item>
                             <ListGroup.Item className='itemListForm'><label>2x Creatina - 300g - Probiotica - <span>R$200,00</span></label> <Button variant='danger'>X</Button></ListGroup.Item>
                         </ListGroup>
