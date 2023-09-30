@@ -80,8 +80,14 @@ export default function Pedidos() {
         })
     }
 
+    function removeProduct(event){
+        //let listGroupItens = document.getElementById("listGroupItens");
+        console.log(event.target.innerHTML);
+    }
+
     function addProduct(){
         let listGroupItens = document.getElementById('listGroupItens');
+
         let productSelect = document.getElementById('productSelect');
         let inputNumberQtde = document.getElementById('qtdeItem');
 
@@ -100,13 +106,14 @@ export default function Pedidos() {
         itemListChild2.setAttribute("class", "btn btn-danger");
         itemListChild2.setAttribute("type", "button");
         itemListChild2.appendChild(textNodeChild2);
+        itemListChild2.addEventListener('click', (event)=>removeProduct(event))
         
         itemList.setAttribute("class", "itemListForm list-group-item");
+        itemList.setAttribute("id", `${listGroupItens.childElementCount}`);
         itemList.appendChild(itemListChild1)
         itemList.appendChild(itemListChild2)
 
         listGroupItens.appendChild(itemList)
-        
     }
 
     async function requireCep(cep) {
@@ -301,12 +308,7 @@ export default function Pedidos() {
                         </Row>
 
                         <ListGroup className='listGroupForm' id='listGroupItens'>
-                            <ListGroup.Item className='itemListForm'>
-                                <label>5x Biovitalith - <span>R$550.00</span></label>
-                                <Button variant='danger'>X</Button>                 
-                            </ListGroup.Item>
-                            <ListGroup.Item className='itemListForm'><label>2x Whei - 900g - MaxTitanium - <span>R$190.00</span></label> <Button variant='danger'>X</Button></ListGroup.Item>
-                            <ListGroup.Item className='itemListForm'><label>2x Creatina - 300g - Probiotica - <span>R$200,00</span></label> <Button variant='danger'>X</Button></ListGroup.Item>
+                            {/*<ListGroup.Item className='itemListForm'><label>2x Whei - 900g - MaxTitanium - <span>R$190.00</span></label> <Button variant='danger'>X</Button></ListGroup.Item>*/}
                         </ListGroup>
                     </Form>
                 </Modal.Body>
