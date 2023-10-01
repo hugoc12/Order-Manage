@@ -81,8 +81,14 @@ export default function Pedidos() {
     }
 
     function removeProduct(event){
-        //let listGroupItens = document.getElementById("listGroupItens");
-        console.log(event.target.innerHTML);
+        let listGroupItens = document.getElementById("listGroupItens");
+        listGroupItens.removeChild(listGroupItens.childNodes[event.target.id])
+
+        listGroupItens.childNodes.forEach((el, ind)=>{
+            el.setAttribute("id", ind);//Item do carrinho
+            el.lastChild.setAttribute("id", ind); //Botão de remoção
+        })
+        //console.log(event.target.id);
     }
 
     function addProduct(){
@@ -105,8 +111,9 @@ export default function Pedidos() {
         let textNodeChild2 = document.createTextNode('X');
         itemListChild2.setAttribute("class", "btn btn-danger");
         itemListChild2.setAttribute("type", "button");
+        itemListChild2.setAttribute("id", `${listGroupItens.childElementCount}`);
         itemListChild2.appendChild(textNodeChild2);
-        itemListChild2.addEventListener('click', (event)=>removeProduct(event))
+        itemListChild2.addEventListener('click', (event)=>removeProduct(event));
         
         itemList.setAttribute("class", "itemListForm list-group-item");
         itemList.setAttribute("id", `${listGroupItens.childElementCount}`);
