@@ -12,6 +12,12 @@ export default function Pedidos() {
     const [radioChecked, setRadioChecked] = useState({ pessoaFisica: true, pessoaJuridica: false });
     const [vlTotalItem, setvlTotalItem] = useState('0.00');
     const [listProducts, setListProducts] = useState([]);
+    const [cart, setCart] = useState([]);
+
+    let BRReal = new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL',
+    });
 
     function handleSubmit(event) {
         let form = event.currentTarget;
@@ -24,15 +30,10 @@ export default function Pedidos() {
         }
         setValidacaoForm(true);
     }
-
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
 
     function productSelected() {
-        let BRReal = new Intl.NumberFormat('pt-BR', {
-            style: 'currency',
-            currency: 'BRL',
-        });
         let productSelect = document.getElementById('productSelect');
         let inputNumberQtde = document.getElementById('qtdeItem');
 
@@ -41,7 +42,7 @@ export default function Pedidos() {
             let vlProduto = listProducts[productSelect.value[0]].valor;
 
             setvlTotalItem(BRReal.format((vlProduto * qtdeDefinida).toFixed(2)))
-        }else{
+        } else {
             setvlTotalItem(BRReal.format('0.00'))
         }
     }
@@ -80,47 +81,30 @@ export default function Pedidos() {
         })
     }
 
-    function removeProduct(event){
+    function removeProduct(event) {
         let listGroupItens = document.getElementById("listGroupItens");
         listGroupItens.removeChild(listGroupItens.childNodes[event.target.id])
 
-        listGroupItens.childNodes.forEach((el, ind)=>{
+        listGroupItens.childNodes.forEach((el, ind) => {
             el.setAttribute("id", ind);//Item do carrinho
             el.lastChild.setAttribute("id", ind); //Botão de remoção
         })
-        //console.log(event.target.id);
     }
 
-    function addProduct(){
-        let listGroupItens = document.getElementById('listGroupItens');
+    function addProduct() {
+        let productId = document.getElementById('productSelect').value[0];
+        let inputNumberQtde = document.getElementById('qtdeItem').value;
+        let product = listProducts[productId];
+        let listCart = [...cart];
+    
+        listCart.push({
+            id:product.id,
+            name:product.name,
+            qtde:Number(inputNumberQtde),
+            total:inputNumberQtde * product.valor
+        })
 
-        let productSelect = document.getElementById('productSelect');
-        let inputNumberQtde = document.getElementById('qtdeItem');
-
-        let itemList = document.createElement('div');
-        let itemListChild1 = document.createElement('label');
-        let itemListChild2 = document.createElement('button');
-
-        let text1NodeChild1 = document.createTextNode(`${inputNumberQtde.value}x ${listProducts[productSelect.value[0]].name}`);
-        let text2NodeChild1 = document.createTextNode(vlTotalItem)
-        let spanNode = document.createElement("span");
-        spanNode.appendChild(text2NodeChild1);
-        itemListChild1.appendChild(text1NodeChild1);
-        itemListChild1.appendChild(spanNode);
-
-        let textNodeChild2 = document.createTextNode('X');
-        itemListChild2.setAttribute("class", "btn btn-danger");
-        itemListChild2.setAttribute("type", "button");
-        itemListChild2.setAttribute("id", `${listGroupItens.childElementCount}`);
-        itemListChild2.appendChild(textNodeChild2);
-        itemListChild2.addEventListener('click', (event)=>removeProduct(event));
-        
-        itemList.setAttribute("class", "itemListForm list-group-item");
-        itemList.setAttribute("id", `${listGroupItens.childElementCount}`);
-        itemList.appendChild(itemListChild1)
-        itemList.appendChild(itemListChild2)
-
-        listGroupItens.appendChild(itemList)
+        setCart(listCart);
     }
 
     async function requireCep(cep) {
@@ -302,19 +286,25 @@ export default function Pedidos() {
 
                             <Form.Group md={2} as={Col} controlId='qtdeItem'>
                                 <Form.Label>Qtde</Form.Label>
-                                <Form.Control required type='number' defaultValue={1} min={1} onKeyDown={(e)=>e.preventDefault()} onChange={(e)=>productSelected()}></Form.Control>
+                                <Form.Control required type='number' defaultValue={1} min={1} onKeyDown={(e) => e.preventDefault()} onChange={(e) => productSelected()}></Form.Control>
                             </Form.Group>
 
                             <Form.Group md={2} as={Col} className='vlTotalItem' controlId='vlTotalItem'>
                                 <Form.Text>{vlTotalItem}</Form.Text>
                             </Form.Group>
 
-                            <FormGroup md={1} as={Col} className='bttAddItem' onClick={(e)=>addProduct()}>
+                            <FormGroup md={1} as={Col} className='bttAddItem' onClick={(e) => addProduct()}>
                                 <Button variant='success'>+</Button>
                             </FormGroup>
                         </Row>
 
                         <ListGroup className='listGroupForm' id='listGroupItens'>
+                            {cart.map((el, ind)=>{
+                                return <ListGroup.Item key={ind} className='itemListForm'>
+                                    <label>{el.qtde}x {el.name} - <span>{BRReal.format(el.total)}</span></label>
+                                    <Button variant='danger'>X</Button>
+                                </ListGroup.Item>
+                            })}
                             {/*<ListGroup.Item className='itemListForm'><label>2x Whei - 900g - MaxTitanium - <span>R$190.00</span></label> <Button variant='danger'>X</Button></ListGroup.Item>*/}
                         </ListGroup>
                     </Form>
