@@ -52,3 +52,6 @@ th, td{
   width: 100%;
 }
 
+.modal-footer{
+  justify-content: space-between !important;
+}

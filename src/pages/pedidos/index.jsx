@@ -11,6 +11,7 @@ export default function Pedidos() {
     const [validacaoForm, setValidacaoForm] = useState(false);
     const [radioChecked, setRadioChecked] = useState("pessoa física");
     const [vlTotalItem, setvlTotalItem] = useState('R$ 0,00');
+    const [vlTotalPedido, setVlTotalPedido] = useState('R$ 0,00');
     const [listProducts, setListProducts] = useState([]);
     const [cart, setCart] = useState([]);
 
@@ -128,6 +129,7 @@ export default function Pedidos() {
     }
 
     useEffect(() => {
+        let vlTotalPedido = 0;
         //Buscar dados no firestone.
         (async function getProducts() {
             const docsProdutos = await getDocs(collection(firestoneDB, "produtos"));
@@ -137,7 +139,14 @@ export default function Pedidos() {
             console.log(dataDocs);
             setListProducts(dataDocs);
         })()
-    }, [firestoneDB])
+
+        cart.forEach((el)=>{
+            vlTotalPedido+=el.total;
+        })
+
+        setVlTotalPedido(BRReal.format(vlTotalPedido));
+
+    }, [firestoneDB, cart])
 
     return (
         <div>
@@ -195,7 +204,7 @@ export default function Pedidos() {
                                 <Form.Control
                                     required
                                     pattern='[A-Za-z ç]+'
-                                    placeholder="Nome"
+                                    placeholder="Razão Social"
                                     form='formIncluirPedido'
                                     name='primeiroNome'
                                     maxLength={60} />
@@ -320,7 +329,7 @@ export default function Pedidos() {
                         <Row className="mb-4">
                             <Form.Group md={7} as={Col} controlId='nameItem'>
                                 <Form.Label>Produto</Form.Label>
-                                <Form.Select required onClick={(e) => productSelected()} form='formIncluirPedido' id='productSelect'>
+                                <Form.Select onClick={(e) => productSelected()} form='formIncluirPedido' id='productSelect'>
                                     <option></option>
                                     {listProducts.map((el, ind) => <option key={ind} value={`${ind}-${el.id}`}>{el.name}</option>)}
                                 </Form.Select>
@@ -328,7 +337,7 @@ export default function Pedidos() {
 
                             <Form.Group md={2} as={Col} controlId='qtdeItem'>
                                 <Form.Label>Qtde</Form.Label>
-                                <Form.Control required type='number' defaultValue={1} min={1} onKeyDown={(e) => e.preventDefault()} onChange={(e) => productSelected()}></Form.Control>
+                                <Form.Control type='number' defaultValue={1} min={1} onKeyDown={(e) => e.preventDefault()} onChange={(e) => productSelected()}></Form.Control>
                             </Form.Group>
 
                             <Form.Group md={2} as={Col} className='vlTotalItem' controlId='vlTotalItem'>
@@ -352,11 +361,11 @@ export default function Pedidos() {
                     </Form>
                 </Modal.Body>
                 <Modal.Footer >
-                    <Button variant="secondary" onClick={handleClose}>
-                        Close
-                    </Button>
+                    <article>
+                        <p>TOTAL DO PEDIDO:</p><h2 style={{fontWeight:'bold'}}>{vlTotalPedido}</h2>
+                    </article>
                     <Button variant="primary" type='submit' form='formIncluirPedido'>
-                        Save Changes
+                        Salvar
                     </Button>
                 </Modal.Footer>
             </Modal>
