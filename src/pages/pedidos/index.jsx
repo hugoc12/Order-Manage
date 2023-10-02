@@ -9,7 +9,7 @@ export default function Pedidos() {
     const firestoneDB = getFirestore(app);
     const [show, setShow] = useState(false);
     const [validacaoForm, setValidacaoForm] = useState(false);
-    const [radioChecked, setRadioChecked] = useState({ pessoaFisica: true, pessoaJuridica: false });
+    const [radioChecked, setRadioChecked] = useState("pessoa física");
     const [vlTotalItem, setvlTotalItem] = useState('R$ 0,00');
     const [listProducts, setListProducts] = useState([]);
     const [cart, setCart] = useState([]);
@@ -100,8 +100,10 @@ export default function Pedidos() {
                 qtde: Number(inputNumberQtde),
                 total: inputNumberQtde * product.valor
             })
+
             document.getElementById('productSelect').value = '';
             document.getElementById('qtdeItem').value = 1;
+
             setCart(listCart);
             setvlTotalItem('R$ 0,00');
         }
@@ -161,7 +163,7 @@ export default function Pedidos() {
                                 name="tipoPessoa"
                                 type='radio'
                                 id={`pessoaFísica`}
-                                onClick={(e) => setRadioChecked({ pessoaFisica: true, pessoaJuridica: false })}
+                                onClick={(e) => setRadioChecked("pessoa física")}
                             />
                             <Form.Check
                                 inline
@@ -169,15 +171,37 @@ export default function Pedidos() {
                                 name="tipoPessoa"
                                 type='radio'
                                 id={`pessoaJurídica`}
-                                onClick={(e) => setRadioChecked({ pessoaFisica: false, pessoaJuridica: true })}
+                                onClick={(e) => setRadioChecked("pessoa jurídica")}
                             />
                         </Form.Group>
 
                         <Form.Group className="mb-3" controlId="formPedidoNome">
                             <Form.Label>Nome</Form.Label>
-                            <Form.Control required pattern='[A-Za-z ç]+' placeholder="Nome" form='formIncluirPedido' name='primeiroNome' maxLength={60} />
+                            {radioChecked === "pessoa física" ?
+                                <Form.Control
+                                    required
+                                    pattern='[A-Za-zç]+'
+                                    placeholder="Nome"
+                                    form='formIncluirPedido'
+                                    name='primeiroNome'
+                                    maxLength={60}
+                                    onKeyDown={(e) => {
+                                        if (e.code === 'Space') {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                        }
+                                    }} />
+                                :
+                                <Form.Control
+                                    required
+                                    pattern='[A-Za-z ç]+'
+                                    placeholder="Nome"
+                                    form='formIncluirPedido'
+                                    name='primeiroNome'
+                                    maxLength={60} />
+                            }
                         </Form.Group>
-                        {radioChecked.pessoaFisica ?
+                        {radioChecked === "pessoa física" ?
                             <FormGroup className='mb-3' controlId='formPedidoSobrenome'>
                                 <Form.Label>Sobrenome</Form.Label>
                                 <Form.Control required pattern='[A-Za-z ç]+' placeholder='Sobrenome' form='formIncluirPedido' name='sobrenome' maxLength={60}></Form.Control>
@@ -206,10 +230,28 @@ export default function Pedidos() {
                         </Row>
 
                         <Form.Group className="mb-3" controlId="formPedidoRegistro">
-                            <Form.Label>{radioChecked.pessoaFisica ? 'CPF' : 'CNPJ'}</Form.Label>
-                            <Form.Control required placeholder={`Digite seu ${radioChecked.pessoaFisica ? 'CPF' : 'CNPJ'}...`} minLength={11} maxLength={15} pattern='[0-9]+' form='formIncluirPedido' name='registro' />
-                        </Form.Group>
+                            <Form.Label>{radioChecked === "pessoa física" ? 'CPF' : 'CNPJ'}</Form.Label>
+                            {
+                                radioChecked === "pessoa física" ?
+                                    <Form.Control
+                                        required
+                                        placeholder={"Digite seu CPF..."}
+                                        minLength={11}
+                                        maxLength={11}
+                                        pattern='[0-9]+'
+                                        form='formIncluirPedido'
+                                        name='registro' /> :
 
+                                    <Form.Control
+                                        required
+                                        placeholder={"Digite seu CNPJ..."}
+                                        minLength={15}
+                                        maxLength={15}
+                                        pattern='[0-9]+'
+                                        form='formIncluirPedido'
+                                        name='registro' />
+                            }
+                        </Form.Group>
 
                         <Row className="mb-3">
                             <FormGroup className="mb-3" md={"2"} as={Col} controlId="formPedidoCep">
