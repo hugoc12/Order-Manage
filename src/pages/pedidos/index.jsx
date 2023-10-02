@@ -10,7 +10,7 @@ export default function Pedidos() {
     const [show, setShow] = useState(false);
     const [validacaoForm, setValidacaoForm] = useState(false);
     const [radioChecked, setRadioChecked] = useState({ pessoaFisica: true, pessoaJuridica: false });
-    const [vlTotalItem, setvlTotalItem] = useState('0.00');
+    const [vlTotalItem, setvlTotalItem] = useState('R$ 0,00');
     const [listProducts, setListProducts] = useState([]);
     const [cart, setCart] = useState([]);
 
@@ -81,30 +81,30 @@ export default function Pedidos() {
         })
     }
 
-    function removeProduct(event) {
-        let listGroupItens = document.getElementById("listGroupItens");
-        listGroupItens.removeChild(listGroupItens.childNodes[event.target.id])
-
-        listGroupItens.childNodes.forEach((el, ind) => {
-            el.setAttribute("id", ind);//Item do carrinho
-            el.lastChild.setAttribute("id", ind); //Botão de remoção
-        })
+    function removeProduct(ind) {
+        let listCart = [...cart];
+        listCart.splice(ind, 1);
+        setCart(listCart);
     }
 
     function addProduct() {
-        let productId = document.getElementById('productSelect').value[0];
-        let inputNumberQtde = document.getElementById('qtdeItem').value;
-        let product = listProducts[productId];
-        let listCart = [...cart];
-    
-        listCart.push({
-            id:product.id,
-            name:product.name,
-            qtde:Number(inputNumberQtde),
-            total:inputNumberQtde * product.valor
-        })
+        if (document.getElementById('productSelect').value !== '') {
+            let productSelected = document.getElementById('productSelect').value;
+            let inputNumberQtde = document.getElementById('qtdeItem').value;
+            let product = listProducts[productSelected[0]];
+            let listCart = [...cart];
 
-        setCart(listCart);
+            listCart.push({
+                id: product.id,
+                name: product.name,
+                qtde: Number(inputNumberQtde),
+                total: inputNumberQtde * product.valor
+            })
+            document.getElementById('productSelect').value = '';
+            document.getElementById('qtdeItem').value = 1;
+            setCart(listCart);
+            setvlTotalItem('R$ 0,00');
+        }
     }
 
     async function requireCep(cep) {
@@ -299,10 +299,10 @@ export default function Pedidos() {
                         </Row>
 
                         <ListGroup className='listGroupForm' id='listGroupItens'>
-                            {cart.map((el, ind)=>{
-                                return <ListGroup.Item key={ind} className='itemListForm'>
+                            {cart.map((el, ind) => {
+                                return <ListGroup.Item key={ind} id={ind} className='itemListForm'>
                                     <label>{el.qtde}x {el.name} - <span>{BRReal.format(el.total)}</span></label>
-                                    <Button variant='danger'>X</Button>
+                                    <Button variant='danger' onClick={(e) => removeProduct(ind)}>X</Button>
                                 </ListGroup.Item>
                             })}
                             {/*<ListGroup.Item className='itemListForm'><label>2x Whei - 900g - MaxTitanium - <span>R$190.00</span></label> <Button variant='danger'>X</Button></ListGroup.Item>*/}
