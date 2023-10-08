@@ -1,10 +1,35 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { Form, FormGroup, Row, Col, ListGroup, Button } from 'react-bootstrap';
+import {getFirestore, getDocs, collection} from 'firebase/firestore'
 import db from '../../services/estados-cidades.json';
 import { Context } from '../../contexts/pagePedidos';
+import { app } from '../../services/firebase/firebase';
 
 function FormPedido() {
     const context = useContext(Context);
+    const firestoneDB = getFirestore(app);
+
+    useEffect(()=>{
+        //Atualizando valor total do pedido.
+        let vlTotalPedido = 0;
+        context.form.cart.forEach((el)=>{
+            vlTotalPedido+=el.total;
+        })
+        context.form.setVlTotalPedido(context.currency.format(vlTotalPedido));
+
+        //Listando produtos disponíveis no firebase.
+        (async function getProducts(){
+            try{
+                let docsProdutos = await getDocs(collection(firestoneDB, "produtos"));
+                let dataDocs = docsProdutos.docs.map((doc) => {
+                    return Object.assign({ id: doc.id }, doc.data());
+                })
+                context.form.setListProducts(dataDocs);
+            }catch(err){
+                console.log(err)
+            }
+        })()
+    }, [context.form.cart, context, firestoneDB])
 
     function productSelected() {
         let productSelect = document.getElementById('productSelect');

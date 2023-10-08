@@ -1,34 +1,11 @@
-import { useEffect, useContext } from 'react';
+import { useContext } from 'react';
 import { Container, Nav, Navbar, Table, Dropdown, DropdownButton, Button} from 'react-bootstrap';
 import './pedidos.css';
 import { Context } from '../../contexts/pagePedidos';
-import { app } from '../../services/firebase/firebase';
-import { getFirestore, collection, getDocs } from 'firebase/firestore';
 import ModalPedido from '../../components/modalPedido';
 
 export default function Pedidos() {
-    const firestoneDB = getFirestore(app);
     const context = useContext(Context);
-
-    useEffect(() => {
-        let vlTotalPedido = 0;
-        //Buscar dados no firestone.
-        (async function getProducts() {
-            const docsProdutos = await getDocs(collection(firestoneDB, "produtos"));
-            const dataDocs = docsProdutos.docs.map((doc) => {
-                return Object.assign({ id: doc.id }, doc.data());
-            })
-            console.log(dataDocs);
-            context.form.setListProducts(dataDocs);
-        })()
-
-        context.form.cart.forEach((el)=>{
-            vlTotalPedido+=el.total;
-        })
-
-        context.form.setVlTotalPedido(context.currency.format(vlTotalPedido));
-
-    }, [firestoneDB, context.form.cart])
 
     return (
         <div>
