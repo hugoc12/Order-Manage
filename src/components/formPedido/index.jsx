@@ -1,11 +1,9 @@
 import React, { useContext, useEffect } from 'react';
 import { Form, FormGroup, Row, Col, ListGroup, Button } from 'react-bootstrap';
-import { getFirestore, getDocs, collection, addDoc, serverTimestamp } from 'firebase/firestore'
+import { getDocs, collection, setDoc, doc, serverTimestamp } from 'firebase/firestore'
 import db from '../../services/estados-cidades.json';
 import { Context } from '../../contexts/pagePedidos';
-import { app } from '../../services/firebase/firebase';
-
-const firestoneDB = getFirestore(app);
+import { firestoreDB } from '../../services/firebase/firebase';
 
 function FormPedido() {
     const context = useContext(Context);
@@ -23,7 +21,7 @@ function FormPedido() {
             console.log('PRODUTOS LISTADOS!');
             (async function getProducts() {
                 try {
-                    let docsProdutos = await getDocs(collection(firestoneDB, "produtos"));
+                    let docsProdutos = await getDocs(collection(firestoreDB, "produtos"));
                     let dataDocs = docsProdutos.docs.map((doc) => {
                         return Object.assign({ id: doc.id }, doc.data());
                     })
@@ -58,15 +56,16 @@ function FormPedido() {
 
         async function setDocumentPedido(data) {
             try {
-                let docId = await addDoc(collection(firestoneDB, "pedidos"), data);
-                console.log(`DOCUMENT ADDED: ${docId.id}`);
+                await setDoc(doc(firestoreDB, "pedidos", `${context.pedidos.length + 1}`), data);
+                console.log(`DOCUMENT ADDED`);
+
                 form.submit();
             } catch (err) {
                 console.log(err);
             }
         }
 
-        if (form.checkValidity()) {
+        if (form.checkValidity() && context.form.cart.length >= 1) {
             let formData = new FormData(form);
             let data = Object.fromEntries(formData);
             context.form.setDataForm(data);

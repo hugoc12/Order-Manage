@@ -13,6 +13,7 @@ function PedidoContextProvider({ children }) {
     const [vlTotalPedido, setVlTotalPedido] = useState('R$ 0,00');
     const [cart, setCart] = useState([]);
     const [dataForm, setDataForm] = useState(null);
+    const [pedidos, setPedidos] = useState([]);
 
     let BRReal = new Intl.NumberFormat('pt-BR', {
         style: 'currency',
@@ -23,6 +24,10 @@ function PedidoContextProvider({ children }) {
         <Context.Provider value={{
             titulo:'Hugo',
             currency:BRReal,
+
+            pedidos,
+            setPedidos,
+            
             form:{
                 show,
                 setShow,
@@ -46,7 +51,8 @@ function PedidoContextProvider({ children }) {
                 setCart,
 
                 dataForm,
-                setDataForm
+                setDataForm,
+
             }
         }}>
             {children}
