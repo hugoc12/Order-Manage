@@ -21,7 +21,7 @@ export default function Pedidos() {
                 console.log(err);
             }
         })()
-    }, []);
+    }, [context]);
 
     return (
         <div>
