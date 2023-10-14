@@ -1,35 +1,40 @@
 import React, { useContext, useEffect } from 'react';
 import { Form, FormGroup, Row, Col, ListGroup, Button } from 'react-bootstrap';
-import {getFirestore, getDocs, collection} from 'firebase/firestore'
+import { getFirestore, getDocs, collection, addDoc, serverTimestamp } from 'firebase/firestore'
 import db from '../../services/estados-cidades.json';
 import { Context } from '../../contexts/pagePedidos';
 import { app } from '../../services/firebase/firebase';
 
+const firestoneDB = getFirestore(app);
+
 function FormPedido() {
     const context = useContext(Context);
-    const firestoneDB = getFirestore(app);
 
-    useEffect(()=>{
+    useEffect(() => {
         //Atualizando valor total do pedido.
         let vlTotalPedido = 0;
-        context.form.cart.forEach((el)=>{
-            vlTotalPedido+=el.total;
+        context.form.cart.forEach((el) => {
+            vlTotalPedido += el.total;
         })
         context.form.setVlTotalPedido(context.currency.format(vlTotalPedido));
 
-        //Listando produtos disponíveis no firebase.
-        (async function getProducts(){
-            try{
-                let docsProdutos = await getDocs(collection(firestoneDB, "produtos"));
-                let dataDocs = docsProdutos.docs.map((doc) => {
-                    return Object.assign({ id: doc.id }, doc.data());
-                })
-                context.form.setListProducts(dataDocs);
-            }catch(err){
-                console.log(err)
-            }
-        })()
-    }, [context.form.cart, context, firestoneDB])
+        //Listando produtos para e seleção disponíveis no firebase.
+        if (context.form.listProducts.length === 0) {
+            console.log('PRODUTOS LISTADOS!');
+            (async function getProducts() {
+                try {
+                    let docsProdutos = await getDocs(collection(firestoneDB, "produtos"));
+                    let dataDocs = docsProdutos.docs.map((doc) => {
+                        return Object.assign({ id: doc.id }, doc.data());
+                    })
+                    context.form.setListProducts(dataDocs);
+                } catch (err) {
+                    console.log(err)
+                }
+            })()
+        }
+
+    }, [context.form.cart, context])
 
     function productSelected() {
         let productSelect = document.getElementById('productSelect');
@@ -46,15 +51,60 @@ function FormPedido() {
     }
 
     function handleSubmit(event) {
+        event.preventDefault();
         let form = event.currentTarget;
-        //let formData = new FormData(form);
-        //let data = Object.fromEntries(formData); DADOS INSERIDOS
 
-        if (form.checkValidity() === false) {
-            event.preventDefault();
-            event.stopPropagation();
-        }
         context.form.setValidacaoForm(true);
+
+        async function setDocumentPedido(data) {
+            try {
+                let docId = await addDoc(collection(firestoneDB, "pedidos"), data);
+                console.log(`DOCUMENT ADDED: ${docId.id}`);
+                form.submit();
+            } catch (err) {
+                console.log(err);
+            }
+        }
+
+        if (form.checkValidity()) {
+            let formData = new FormData(form);
+            let data = Object.fromEntries(formData);
+            context.form.setDataForm(data);
+
+            let vlTotalPedido = 0;
+            context.form.cart.forEach((el) => {
+                vlTotalPedido += el.total;
+            })
+
+            let dataDef = {
+                tipoCliente: data.tipoPessoa,
+                nome: data.primeiroNome,
+                sobrenome: data.tipoPessoa === 'pessoa física' ? data.sobrenome : '',
+                email: data.email,
+                telefone: data.telefone,
+                celular: data.celular,
+                cpf: data.tipoPessoa === 'pessoa física' ? data.registro : '',
+                cnpj: data.tipoPessoa === 'pessoa jurídica' ? data.registro : '',
+                endereco: {
+                    cep: data.cep,
+                    logradouro: data.endereco,
+                    numero: data.numeroResidencial,
+                    bairro: data.bairro,
+                    cidade: data.cidade,
+                    estado: data.estado,
+                },
+                cart: context.form.cart,
+                valorTotal: vlTotalPedido,
+                shipping: {
+                    status: 'ENVIADO',
+                    data: serverTimestamp(),
+                    rastreio: 'AB2002789789'
+                }
+            }
+
+            setDocumentPedido(dataDef);
+        }
+
     }
 
     function addProduct() {
@@ -84,7 +134,7 @@ function FormPedido() {
         listCart.splice(ind, 1);
         context.form.setCart(listCart);
     }
-    
+
     function autoCompleteAddress(estado, cidade) {
         let dataEstado = db.estados.find((obj) => obj.sigla === estado);
         console.log(estado);
@@ -147,6 +197,7 @@ function FormPedido() {
                     name="tipoPessoa"
                     type='radio'
                     id={`pessoaFísica`}
+                    value='pessoa física'
                     onClick={(e) => context.form.setRadioChecked("pessoa física")}
                 />
                 <Form.Check
@@ -155,6 +206,7 @@ function FormPedido() {
                     name="tipoPessoa"
                     type='radio'
                     id={`pessoaJurídica`}
+                    value='pessoa jurídica'
                     onClick={(e) => context.form.setRadioChecked("pessoa jurídica")}
                 />
             </Form.Group>
@@ -178,7 +230,7 @@ function FormPedido() {
                     :
                     <Form.Control
                         required
-                        pattern='[A-Za-z ç]+'
+                        pattern='[A-Za-z çáéíóúâêîôûãõ]+'
                         placeholder="Razão Social"
                         form='formIncluirPedido'
                         name='primeiroNome'
@@ -326,7 +378,7 @@ function FormPedido() {
 
             <ListGroup className='listGroupForm' id='listGroupItens'>
                 {context.form.cart.map((el, ind) => {
-                    return <ListGroup.Item key={ind} id={ind} className='itemListForm'>
+                    return <ListGroup.Item key={ind} id={el.id} className='itemListForm'>
                         <label>{el.qtde}x {el.name} - <span>{context.currency.format(el.total)}</span></label>
                         <Button variant='danger' onClick={(e) => removeProduct(ind)}>X</Button>
                     </ListGroup.Item>

@@ -12,6 +12,7 @@ function PedidoContextProvider({ children }) {
     const [vlTotalItem, setvlTotalItem] = useState('R$ 0,00');
     const [vlTotalPedido, setVlTotalPedido] = useState('R$ 0,00');
     const [cart, setCart] = useState([]);
+    const [dataForm, setDataForm] = useState(null);
 
     let BRReal = new Intl.NumberFormat('pt-BR', {
         style: 'currency',
@@ -42,7 +43,10 @@ function PedidoContextProvider({ children }) {
                 setVlTotalPedido,
 
                 cart,
-                setCart
+                setCart,
+
+                dataForm,
+                setDataForm
             }
         }}>
             {children}

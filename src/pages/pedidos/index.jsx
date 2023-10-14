@@ -1,4 +1,4 @@
-import { useContext } from 'react';
+import { useContext, useEffect } from 'react';
 import { Container, Nav, Navbar, Table, Dropdown, DropdownButton, Button} from 'react-bootstrap';
 import './pedidos.css';
 import { Context } from '../../contexts/pagePedidos';
@@ -6,6 +6,11 @@ import ModalPedido from '../../components/modalPedido';
 
 export default function Pedidos() {
     const context = useContext(Context);
+
+    useEffect(()=>{
+        console.log(context.form.dataForm);
+        console.log(context.form.cart);
+    }, [context.form.dataForm, context.form.cart]);
 
     return (
         <div>
