@@ -1,6 +1,6 @@
 import React, { useContext, useEffect } from 'react';
 import { Form, FormGroup, Row, Col, ListGroup, Button } from 'react-bootstrap';
-import { getDocs, collection, setDoc, doc, serverTimestamp } from 'firebase/firestore'
+import { getDocs, collection, setDoc, doc } from 'firebase/firestore'
 import db from '../../services/estados-cidades.json';
 import { Context } from '../../contexts/pagePedidos';
 import { firestoreDB } from '../../services/firebase/firebase';
@@ -10,6 +10,7 @@ function FormPedido() {
 
     useEffect(() => {
         //Atualizando valor total do pedido.
+        //console.log('effect form')
         let vlTotalPedido = 0;
         context.form.cart.forEach((el) => {
             vlTotalPedido += el.total;
@@ -26,6 +27,7 @@ function FormPedido() {
                         return Object.assign({ id: doc.id }, doc.data());
                     })
                     context.form.setListProducts(dataDocs);
+                    console.log('produtos listados!')
                 } catch (err) {
                     console.log(err)
                 }
@@ -68,6 +70,7 @@ function FormPedido() {
         if (form.checkValidity() && context.form.cart.length >= 1) {
             let formData = new FormData(form);
             let data = Object.fromEntries(formData);
+            let date = new Date();
             context.form.setDataForm(data);
 
             let vlTotalPedido = 0;
@@ -96,7 +99,7 @@ function FormPedido() {
                 valorTotal: vlTotalPedido,
                 shipping: {
                     status: 'ENVIADO',
-                    data: serverTimestamp(),
+                    data: `${date.getDate()}/${date.getMonth()+1}/${date.getFullYear()}`,
                     rastreio: 'AB2002789789'
                 }
             }
