@@ -10,7 +10,7 @@ function FormPedido() {
 
     useEffect(() => {
         //Atualizando valor total do pedido.
-        //console.log('effect form')
+        console.log('effect form')
         let vlTotalPedido = 0;
         context.form.cart.forEach((el) => {
             vlTotalPedido += el.total;

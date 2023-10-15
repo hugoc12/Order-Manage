@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from 'react';
-import { Container, Nav, Navbar, Table, Dropdown, DropdownButton, Button, Spinner} from 'react-bootstrap';
+import { Container, Nav, Navbar, Table, Dropdown, DropdownButton, Button, Spinner } from 'react-bootstrap';
 import { getDocs, collection } from 'firebase/firestore';
 import { firestoreDB } from '../../services/firebase/firebase';
 import './pedidos.css';
@@ -8,9 +8,11 @@ import ModalPedido from '../../components/modalPedido';
 
 export default function Pedidos() {
     const context = useContext(Context);
-    const [loadPedidos, setLoadPedidos] = useState(false);
+    const [loadPedidos, setLoadPedidos] = useState(true);
+
 
     useEffect(() => {
+        console.log('EFFECT PEDIDOS!')
         if (context.pedidos.length === 0) {
             (async function getPedidos() {
                 try {
@@ -18,12 +20,10 @@ export default function Pedidos() {
                         context.setPedidos(e.docs.map((el) => {
                             return Object.assign({ id: el.id }, el.data());
                         }).reverse())
-                        setLoadPedidos(true);
-                        console.log('pedidos carregados!!');
+                        setLoadPedidos(false);
                     });
-
                 } catch (err) {
-                    console.log(err);
+                    setLoadPedidos(true)
                 }
             })()
         }
@@ -45,6 +45,10 @@ export default function Pedidos() {
             <ModalPedido />
 
             {loadPedidos ?
+                <Container md={'xl'} style={{ height: '100vh', display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+                    <Spinner animation="grow" variant="dark" />
+                </Container>
+                :
                 <Table striped bordered hover size="sm">
                     <thead>
                         <tr>
@@ -77,10 +81,6 @@ export default function Pedidos() {
                         })}
                     </tbody>
                 </Table>
-                :
-                <Container md={'xl'} style={{ height: '100vh', display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
-                    <Spinner animation="grow" variant="dark" />
-                </Container>
             }
         </div>
     )
