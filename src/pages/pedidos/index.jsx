@@ -27,7 +27,7 @@ export default function Pedidos() {
                 }
             })()
         }
-    }, [context]);
+    }, []);
 
     return (
         <div>
