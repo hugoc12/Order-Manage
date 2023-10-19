@@ -12,7 +12,6 @@ export default function Pedidos() {
 
 
     useEffect(() => {
-        console.log('EFFECT PEDIDOS!')
         if (context.pedidos.length === 0) {
             (async function getPedidos() {
                 try {
@@ -21,6 +20,7 @@ export default function Pedidos() {
                             return Object.assign({ id: el.id }, el.data());
                         }).reverse())
                         setLoadPedidos(false);
+                        console.log('PEDIDOS LISTADOS!')
                     });
                 } catch (err) {
                     setLoadPedidos(true)

@@ -10,7 +10,6 @@ function FormPedido() {
 
     useEffect(() => {
         //Atualizando valor total do pedido.
-        console.log('effect form')
         let vlTotalPedido = 0;
         context.form.cart.forEach((el) => {
             vlTotalPedido += el.total;
@@ -19,7 +18,6 @@ function FormPedido() {
 
         //Listando produtos para e seleção disponíveis no firebase.
         if (context.form.listProducts.length === 0) {
-            console.log('PRODUTOS LISTADOS!');
             (async function getProducts() {
                 try {
                     let docsProdutos = await getDocs(collection(firestoreDB, "produtos"));
@@ -27,14 +25,14 @@ function FormPedido() {
                         return Object.assign({ id: doc.id }, doc.data());
                     })
                     context.form.setListProducts(dataDocs);
-                    console.log('produtos listados!')
+                    console.log('PRODUTOS LISTADOS!');
                 } catch (err) {
                     console.log(err)
                 }
             })()
         }
 
-    }, [context.form.cart, context])
+    }, [context.form.cart])
 
     function productSelected() {
         let productSelect = document.getElementById('productSelect');
