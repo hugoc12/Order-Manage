@@ -6,28 +6,32 @@ import './pedidos.css';
 import { Context } from '../../contexts/pagePedidos';
 import ModalPedido from '../../components/modalPedido';
 
+//utils
+import deleteOrder from './utils/deleteOrder';
+
 export default function Pedidos() {
     const context = useContext(Context);
     const [loadPedidos, setLoadPedidos] = useState(true);
 
+    async function getPedidos(){
+        try {
+            await getDocs(collection(firestoreDB, "pedidos")).then((e) => {
+                context.setPedidos(e.docs.map((el) => {
+                    return Object.assign({ id: el.id }, el.data());
+                }).reverse())
+                setLoadPedidos(false);
+                console.log('PEDIDOS LISTADOS!')
+            });
+        } catch (err) {
+            setLoadPedidos(true)
+        }
+    }
 
     useEffect(() => {
         if (context.pedidos.length === 0) {
-            (async function getPedidos() {
-                try {
-                    await getDocs(collection(firestoreDB, "pedidos")).then((e) => {
-                        context.setPedidos(e.docs.map((el) => {
-                            return Object.assign({ id: el.id }, el.data());
-                        }).reverse())
-                        setLoadPedidos(false);
-                        console.log('PEDIDOS LISTADOS!')
-                    });
-                } catch (err) {
-                    setLoadPedidos(true)
-                }
-            })()
+            getPedidos();
         }
-    }, []);
+    }, [context.pedidos]);
 
     return (
         <div>
@@ -73,7 +77,10 @@ export default function Pedidos() {
                                     <td>{el.shipping.data}</td>
                                     <td>
                                         <DropdownButton align="end" id="dropdown-menu-align-end" title=''>
-                                            <Dropdown.Item eventKey="1">Exclui</Dropdown.Item>
+                                            <Dropdown.Item eventKey="1" onClick={(event)=>{
+                                                setLoadPedidos(true);
+                                                deleteOrder(el.id); 
+                                                getPedidos()}}>Exclui</Dropdown.Item>
                                             <Dropdown.Item eventKey="2">Editar</Dropdown.Item>
                                         </DropdownButton>
                                     </td>

@@ -8,7 +8,7 @@ function ModalPedido(props) {
 
     return (
         <Modal show={context.form.show} onHide={() => context.form.setShow(false)} size='lg'>
-            <Modal.Header closeButton><Modal.Title>Modal heading</Modal.Title></Modal.Header>
+            <Modal.Header closeButton><Modal.Title>Incluir Pedido</Modal.Title></Modal.Header>
             <Modal.Body>
                 <FormPedido />
             </Modal.Body>
