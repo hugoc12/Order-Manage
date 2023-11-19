@@ -69,8 +69,8 @@ export default function Pedidos() {
                                     <td>{el.nome} {el.sobrenome}</td>
                                     <td>{el.endereco.logradouro} - {el.endereco.numero} - {el.endereco.cidade} - {el.endereco.estado} - {el.endereco.cep}</td>
                                     <td>{el.shipping.status}</td>
-                                    <td>{el.shipping.data}</td>
                                     <td>{el.shipping.rastreio}</td>
+                                    <td>{el.shipping.data}</td>
                                     <td>
                                         <DropdownButton align="end" id="dropdown-menu-align-end" title=''>
                                             <Dropdown.Item eventKey="1">Exclui</Dropdown.Item>
