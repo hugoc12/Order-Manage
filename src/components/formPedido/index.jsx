@@ -121,7 +121,7 @@ function FormPedido() {
                     });
                 })
 
-                let id = Math.max(...listId) + 1 /// last id + 1
+                let id = Math.max(...listId, 0) + 1 /// last id + 1
 
                 if(context.idPedidoEdit){
                     await updateDoc(doc(firestoreDB, "pedidos", context.idPedidoEdit), data)
