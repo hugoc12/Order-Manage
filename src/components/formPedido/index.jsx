@@ -1,12 +1,70 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useEffect, useRef } from 'react';
 import { Form, FormGroup, Row, Col, ListGroup, Button } from 'react-bootstrap';
-import { getDocs, collection, setDoc, doc } from 'firebase/firestore'
+import { getDocs, collection, setDoc, doc, getDoc, updateDoc } from 'firebase/firestore'
 import db from '../../services/estados-cidades.json';
 import { Context } from '../../contexts/pagePedidos';
 import { firestoreDB } from '../../services/firebase/firebase';
 
 function FormPedido() {
     const context = useContext(Context);
+    const formRef = useRef();
+
+    useEffect(() => {
+        //Carregamento dos dados do pedido caso seja uma edição.
+        (async function loadPedido() {
+            try {
+                let docRef = doc(firestoreDB, 'pedidos', context.idPedidoEdit);
+                let data = (await getDoc((docRef))).data();
+
+                if (data.tipoCliente === 'pessoa física') {
+                    context.form.setRadioChecked("pessoa física");
+                } else if (data.tipoCliente === 'pessoa jurídica') {
+                    context.form.setRadioChecked("pessoa jurídica");
+                }
+
+            } catch (err) {
+                console.log('ID NÃO ENCONTRADO');
+            }
+        })();
+    }, [])
+
+    useEffect(() => {
+        (async function loadPedido() {
+            try {
+                let docRef = doc(firestoreDB, 'pedidos', context.idPedidoEdit);
+                let data = (await getDoc((docRef))).data();
+                if (data.tipoCliente === 'pessoa física') {
+                    context.form.setRadioChecked("pessoa física");
+                    formRef.current.pessoaFísica.checked = 'true';
+                    formRef.current.formPedidoSobrenome.value = data.sobrenome;
+                    formRef.current.formPedidoRegistro.value = data.cpf;
+                } else if (data.tipoCliente === 'pessoa jurídica') {
+                    context.form.setRadioChecked("pessoa jurídica");
+                    formRef.current.pessoaJurídica.checked = 'true';
+                    formRef.current.formPedidoRegistro.value = data.cnpj;
+                }
+
+                formRef.current.formPedidoNome.value = data.nome;
+
+                formRef.current.formPedidoEmail.value = data.email;
+                formRef.current.formPedidoTelefone.value = data.telefone;
+                formRef.current.formPedidoCelular.value = data.celular;
+
+                //formRef.current.formPedidoCep = data.endereco.cep;
+                formRef.current.formPedidoEndereco.value = data.endereco.logradouro;
+                formRef.current.formPedidoBairro.value = data.endereco.bairro;
+                formRef.current.formPedidoEnderecoNumero.value = data.endereco.numero;
+                formRef.current.formPedidoEstado.value = data.endereco.estado;
+                autoCompleteAddress(data.endereco.estado);
+                formRef.current.formPedidoCidade.value = data.endereco.cidade;
+
+                context.form.setCart(data.cart);
+            } catch (err) {
+                console.log('ID NÃO ENCONTRADO')
+            }
+        })()
+
+    }, [context.form.radioChecked])
 
     useEffect(() => {
         //Atualizando valor total do pedido.
@@ -55,10 +113,23 @@ function FormPedido() {
         context.form.setValidacaoForm(true);
 
         async function setDocumentPedido(data) {
+            
             try {
-                await setDoc(doc(firestoreDB, "pedidos", `${context.pedidos.length + 1}`), data);
-                console.log(`DOCUMENT ADDED`);
+                let listId = await getDocs(collection(firestoreDB, "pedidos")).then((response)=>{
+                    return response.docs.map((el)=>{
+                        return Number(el.id);
+                    });
+                })
 
+                let id = Math.max(...listId) + 1 /// last id + 1
+
+                if(context.idPedidoEdit){
+                    await updateDoc(doc(firestoreDB, "pedidos", context.idPedidoEdit), data)
+                }else{
+                    console.log('add');
+                    await setDoc(doc(firestoreDB, "pedidos", String(id)), data);
+                }
+                console.log(`DOCUMENT ADDED/UPDATE`);
                 form.submit();
             } catch (err) {
                 console.log(err);
@@ -97,7 +168,7 @@ function FormPedido() {
                 valorTotal: vlTotalPedido,
                 shipping: {
                     status: 'ENVIADO',
-                    data: `${date.getDate()}/${date.getMonth()+1}/${date.getFullYear()}`,
+                    data: `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`,
                     rastreio: 'AB2002789789'
                 }
             }
@@ -137,8 +208,6 @@ function FormPedido() {
 
     function autoCompleteAddress(estado, cidade) {
         let dataEstado = db.estados.find((obj) => obj.sigla === estado);
-        console.log(estado);
-
         let nodeSelectEstado = document.getElementsByName("estado")[0];
         let nodeSelectCidades = document.getElementsByName("cidade")[0];
 
@@ -188,7 +257,7 @@ function FormPedido() {
     }
 
     return (
-        <Form noValidate validated={context.form.validacaoForm} onSubmit={(event) => handleSubmit(event)} id='formIncluirPedido' name='formIncluirPedido'>
+        <Form ref={formRef} noValidate validated={context.form.validacaoForm} onSubmit={(event) => handleSubmit(event)} id='formIncluirPedido' name='formIncluirPedido'>
             <Form.Group className="mb-3" controlId='formPedidoTipoPessoa' style={{ textAlign: 'center', fontSize: '20px' }}>
                 <Form.Check
                     defaultChecked
@@ -302,7 +371,7 @@ function FormPedido() {
 
                 <Form.Group className='mb-3' md="4" as={Col}>
                     <Form.Label>Bairro</Form.Label>
-                    <Form.Control required placeholder='Bairro' maxLength={60} form='formIncluirPedido' name='bairro'></Form.Control>
+                    <Form.Control required placeholder='Bairro' maxLength={60} form='formIncluirPedido' name='bairro' id='formPedidoBairro'></Form.Control>
                 </Form.Group>
             </Row>
 

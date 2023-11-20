@@ -5,6 +5,7 @@ import { firestoreDB } from '../../services/firebase/firebase';
 import './pedidos.css';
 import { Context } from '../../contexts/pagePedidos';
 import ModalPedido from '../../components/modalPedido';
+import ModalEditPedido from '../../components/modalEditPedido';
 
 //utils
 import deleteOrder from './utils/deleteOrder';
@@ -42,11 +43,14 @@ export default function Pedidos() {
                         <Nav.Link href="/" style={{ color: '#fff' }}>Pedidos</Nav.Link>
                         <Nav.Link href="/estoque">Estoque</Nav.Link>
                     </Nav>
-                    <Button variant="success" onClick={() => context.form.setShow(true)}>INCLUIR PEDIDO</Button>
+                    <Button variant="success" onClick={() => 
+                        {context.setIdPedidoEdit(null);
+                        context.form.setShow(true);}}>INCLUIR PEDIDO</Button>
                 </Container>
             </Navbar>
 
             <ModalPedido />
+            <ModalEditPedido/>
 
             {loadPedidos ?
                 <Container md={'xl'} style={{ height: '100vh', display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
@@ -81,7 +85,10 @@ export default function Pedidos() {
                                                 setLoadPedidos(true);
                                                 deleteOrder(el.id); 
                                                 getPedidos()}}>Exclui</Dropdown.Item>
-                                            <Dropdown.Item eventKey="2">Editar</Dropdown.Item>
+                                            <Dropdown.Item eventKey="2" onClick={(event)=>{
+                                                context.setIdPedidoEdit(el.id);
+                                                context.form.setShowEdit(true);
+                                            }}>Editar</Dropdown.Item>
                                         </DropdownButton>
                                     </td>
                                 </tr>)
